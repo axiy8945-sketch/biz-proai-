@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": false,
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["../../src/*"],
+      "next/link": ["./stubs/next-link.tsx"],
+      "next/navigation": ["./stubs/next-navigation.ts"],
+      "next/headers": ["./stubs/next-headers.ts"],
+      "next/server": ["./stubs/next-server.ts"],
+      "server-only": ["./stubs/empty.ts"],
+      "@supabase/ssr": ["./stubs/empty.ts"],
+      "@supabase/supabase-js": ["./stubs/empty.ts"]
+    }
+  }
+}

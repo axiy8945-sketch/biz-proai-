@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "noImplicitAny": false,
+    "paths": { "@/*": ["../../src/*"] },
+    "typeRoots": ["/opt/npm-tools/node_modules/@types"],
+    "types": ["node"],
+    "plugins": [],
+    "incremental": false
+  },
+  "include": ["../../src/**/*.ts", "../../src/**/*.tsx", "./stubs.d.ts"],
+  "exclude": []
+}
