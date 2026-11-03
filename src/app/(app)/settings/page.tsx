@@ -4,11 +4,17 @@ import { BusinessSettingsForm, BusinessSwitcher, ReportSettingsForm, SignOutButt
 import { Icon } from '@/components/icons';
 import { PageTitle, Section } from '@/components/ui';
 import { getAppContext } from '@/lib/context';
-import { telegramConfigured } from '@/lib/telegram';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export default async function SettingsPage() {
   const ctx = await getAppContext();
   const { t, business } = ctx;
+  let botName = process.env.TELEGRAM_BOT_USERNAME ?? '';
+  if (ctx.isOwner) {
+    const admin = supabaseAdmin();
+    const r = admin ? await admin.from('telegram_bots').select('username').eq('business_id', business.id).maybeSingle() : null;
+    if (r?.data?.username) botName = r.data.username;
+  }
   return (
     <div className="stack">
       <PageTitle>{t.settings.title}</PageTitle>
@@ -28,7 +34,7 @@ export default async function SettingsPage() {
           <Section title={t.settings.business}><BusinessSettingsForm t={t} business={business} /></Section>
           <Section title={t.settings.reports}><ReportSettingsForm t={t} business={business} /></Section>
           <Section title={t.settings.telegram}>
-            <TelegramConnect t={t} connected={Boolean(business.telegram_chat_id)} configured={telegramConfigured()} botName={process.env.TELEGRAM_BOT_USERNAME ?? ''} />
+            <TelegramConnect t={t} connected={Boolean(business.telegram_chat_id)} botName={botName} />
           </Section>
         </>
       )}

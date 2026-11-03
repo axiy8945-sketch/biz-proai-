@@ -5,7 +5,9 @@ import { AGENT_IDS } from '../ai/types';
 import type { ActionResult } from '../errors';
 import { dict, isLang } from '../i18n';
 import { supabaseServer } from '../supabase/server';
-import { registerTelegramWebhook } from '../telegram';
+import { randomBytes } from 'node:crypto';
+import { supabaseAdmin } from '../supabase/admin';
+import { checkBotToken, registerTelegramWebhook } from '../telegram';
 import { ALL_MODULES, BUSINESS_TYPES, type ModuleId } from '../types';
 import { bool, oneOf, str, uuid } from '../validate';
 import { run, unwrap } from './_run';
@@ -102,5 +104,29 @@ export async function setupTelegramBot() {
     const res = await registerTelegramWebhook(`https://${host}`);
     if (!res.ok) throw new Error('msg:' + (res.error === 'not_configured' ? ctx.t.settings.tgNotConfigured : res.error));
     return res.username ?? '';
+  });
+}
+
+/**
+ * Owner pastes the BotFather token in Settings. We validate it, register the webhook with a
+ * fresh secret, store it server-side (service role only) and return a one-time link code.
+ */
+export async function connectTelegramBot(token: string) {
+  return run(async (ctx, sb) => {
+    if (!ctx.isOwner) throw new Error('owner_only');
+    const admin = supabaseAdmin();
+    if (!admin) throw new Error('msg:' + ctx.t.emp.serviceKeyMissing);
+    const clean = String(token ?? '').trim();
+    const username = await checkBotToken(clean);
+    if (username === null) throw new Error('msg:' + ctx.t.settings.tgBadToken);
+    const secret = randomBytes(24).toString('hex');
+    const h = await headers();
+    const host = h.get('x-forwarded-host') ?? h.get('host');
+    const reg = await registerTelegramWebhook(`https://${host}`, clean, secret);
+    if (!reg.ok) throw new Error('msg:' + (reg.error ?? 'Telegram error'));
+    const { error } = await admin.from('telegram_bots').upsert({ business_id: ctx.business.id, token: clean, secret, username, updated_at: new Date().toISOString() });
+    if (error) throw new Error('msg:' + ctx.t.settings.tgNeedSql);
+    const code = unwrap(await sb.rpc('create_telegram_link_code', { p_business: ctx.business.id })) as string;
+    return { username, code };
   });
 }

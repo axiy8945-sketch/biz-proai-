@@ -43,7 +43,8 @@ export async function GET(req: NextRequest) {
       for (const l of ['ky', 'uz', 'ru'] as Lang[]) texts[l] = await buildDailyReport(data as DailyReportData, port, b.modules as ModuleId[], b.timezone, l);
       let delivered: string | null = null;
       if (b.report_channel === 'telegram' && b.telegram_chat_id) {
-        delivered = (await sendTelegram(b.telegram_chat_id, texts[b.language as Lang] ?? texts.ky)) ? 'telegram' : null;
+        const { data: ownBot } = await admin.from('telegram_bots').select('token').eq('business_id', b.id).maybeSingle();
+        delivered = (await sendTelegram(b.telegram_chat_id, texts[b.language as Lang] ?? texts.ky, ownBot?.token)) ? 'telegram' : null;
       } else if (b.report_channel === 'in_app') delivered = 'in_app';
       await admin.from('daily_reports').upsert({
         business_id: b.id, report_date: date, data, text_ky: texts.ky, text_uz: texts.uz, text_ru: texts.ru,

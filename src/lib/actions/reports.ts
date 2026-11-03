@@ -14,7 +14,9 @@ export async function generateDailyReport(date: string, send = false) {
     let sent = false;
     if (send) {
       if (!ctx.business.telegram_chat_id) throw new Error('msg:' + ctx.t.settings.tgConnect);
-      sent = await sendTelegram(ctx.business.telegram_chat_id, text);
+      const admin = (await import('../supabase/admin')).supabaseAdmin();
+      const ownBot = admin ? (await admin.from('telegram_bots').select('token').eq('business_id', ctx.business.id).maybeSingle()).data : null;
+      sent = await sendTelegram(ctx.business.telegram_chat_id, text, ownBot?.token);
       if (!sent) throw new Error('msg:' + ctx.t.settings.tgNotConfigured);
     }
     return { text, sent };

@@ -105,7 +105,7 @@ export const ky: Dict = {
     title: 'Жөндөөлөр', business: 'Бизнес', appearance: 'Көрүнүш', theme: 'Тема', dark: 'Караңгы', light: 'Жарык',
     system: 'Системалык', language: 'Интерфейс тили', reports: 'Күнүмдүк отчет', reportTime: 'Жөнөтүү убактысы',
     channel: 'Кайда жөнөтүү', ch_in_app: 'Тиркемеде', ch_telegram: 'Telegram', ch_none: 'Жөнөтпөө',
-    telegram: 'Telegram', tgAbout: 'Telegram аркылуу AI командага суроо берип, күнүмдүк отчетту аласыз.', tgBotSetup: '1. Ботту иштетүү', tgBotReady: 'Бот иштеп жатат ✓', tgReconnect: 'Кайра туташтыруу', tgConnect: 'Telegram туташтыруу', tgConnected: 'Telegram туташкан',
+    telegram: 'Telegram', tgAbout: 'Telegram аркылуу AI командага суроо берип, күнүмдүк отчетту аласыз.', tgBotSetup: '1. Ботту иштетүү', tgBotReady: 'Бот иштеп жатат ✓', tgReconnect: 'Кайра туташтыруу', tgStep1: 'Telegram\'да @BotFather ачып, /newbot жазыңыз жана бот түзүңүз.', tgStep2: 'BotFather берген токенди көчүрүп, бул жерге коюңуз.', tgStep3: '✅ Бот даяр! Эми баскычты басып, Telegram\'да Start басыңыз.', tgToken: 'Бот токени', tgBadToken: 'Токен туура эмес. BotFather берген токенди толук көчүрүңүз.', tgNeedSql: 'Маалымат базасын жаңыртуу керек: Supabase\'те 0005_telegram_bots.sql иштетиңиз.', tgConnect: 'Telegram туташтыруу', tgConnected: 'Telegram туташкан',
     tgHow: 'Ботту ачып, ага бул буйрукту жөнөтүңүз:', tgNotConfigured: 'Бот жөндөлгөн эмес: серверге TELEGRAM_BOT_TOKEN кошуңуз.',
     negativeStock: 'Калдык нөл болсо да сатууга уруксат берүү', agents: 'AI агенттер', switchBusiness: 'Бизнести алмаштыруу',
     addBusiness: 'Бизнес кошуу', timezone: 'Убакыт алкагы', modules: 'Модулдар',

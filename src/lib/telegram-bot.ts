@@ -26,8 +26,8 @@ const TEXT_ONLY: Record<Lang, string> = { ky: '✍️ Азырынча текс�
 const LIMIT: Record<Lang, string> = { ky: '⏳ Суроо өтө көп. Бир мүнөт күтүңүз.', uz: '⏳ Soʻrovlar juda koʻp. Bir daqiqa kuting.', ru: '⏳ Слишком много запросов. Подождите минуту.' };
 const LINKED = (name: string) => `✅ BizPro AI — «${name}» туташты / ulandi / подключено.\n\n` + HELP.ky;
 
-export async function sendTyping(chatId: string) {
-  const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
+export async function sendTyping(chatId: string, botToken?: string) {
+  const token = botToken || process.env.TELEGRAM_BOT_TOKEN?.trim();
   if (!token) return;
   await fetch(`https://api.telegram.org/bot${token}/sendChatAction`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ chat_id: chatId, action: 'typing' }),
@@ -36,7 +36,8 @@ export async function sendTyping(chatId: string) {
 
 const BIZ_COLS = 'id,name,type,modules,currency,language,timezone,allow_negative_stock,report_time,report_channel,telegram_chat_id,agent_settings,created_by';
 
-export async function handleTelegramMessage(admin: Admin, msg: TgMessage): Promise<void> {
+export async function handleTelegramMessage(admin: Admin, msg: TgMessage, bot: { business_id: string | null; token?: string }): Promise<void> {
+  const send = (chat: string, text: string) => sendTelegram(chat, text, bot.token);
   const chatId = msg.chat?.id ? String(msg.chat.id) : '';
   if (!chatId) return;
   if (msg.chat?.type && msg.chat.type !== 'private') return; // never answer business questions in groups
@@ -46,36 +47,38 @@ export async function handleTelegramMessage(admin: Admin, msg: TgMessage): Promi
   const link = text.match(/^\/start\s+([A-F0-9]{10})$/i);
   if (link) {
     const { data: biz } = await admin.from('businesses').select('id,name').eq('telegram_link_code', link[1].toUpperCase()).maybeSingle();
-    if (!biz) { await sendTelegram(chatId, '❌ Код табылган жок / Kod topilmadi / Код не найден'); return; }
+    if (biz && bot.business_id && biz.id !== bot.business_id) { await send(chatId, '❌ Бул бот башка бизнеске таандык / Bu bot boshqa biznesga tegishli'); return; }
+    if (!biz) { await send(chatId, '❌ Код табылган жок / Kod topilmadi / Код не найден'); return; }
     await admin.from('businesses').update({ telegram_chat_id: chatId, telegram_link_code: null, report_channel: 'telegram' }).eq('id', biz.id);
-    await sendTelegram(chatId, LINKED(biz.name));
+    await send(chatId, LINKED(biz.name));
     return;
   }
 
   // 2. Which business is this chat linked to?
   const { data: list } = await admin.from('businesses').select(BIZ_COLS).eq('telegram_chat_id', chatId).order('created_at', { ascending: false }).limit(1);
+  if (bot.business_id && list?.[0] && (list[0] as { id: string }).id !== bot.business_id) { await send(chatId, NOT_LINKED); return; }
   const business = (list?.[0] ?? null) as (Business & { created_by: string }) | null;
-  if (!business) { await sendTelegram(chatId, NOT_LINKED); return; }
+  if (!business) { await send(chatId, NOT_LINKED); return; }
   const lang: Lang = text ? detectLang(text, business.language) : business.language;
 
-  if (!text) { await sendTelegram(chatId, TEXT_ONLY[lang]); return; }
-  if (/^\/(start|help)\b/i.test(text)) { await sendTelegram(chatId, HELP[lang]); return; }
+  if (!text) { await send(chatId, TEXT_ONLY[lang]); return; }
+  if (/^\/(start|help)\b/i.test(text)) { await send(chatId, HELP[lang]); return; }
 
   // 3. Rate limit: 20 questions per minute per business
   const since = new Date(Date.now() - 60_000).toISOString();
   const { count } = await admin.from('ai_messages').select('id', { count: 'exact', head: true })
     .eq('business_id', business.id).eq('role', 'user').gte('created_at', since);
-  if ((count ?? 0) >= 20) { await sendTelegram(chatId, LIMIT[lang]); return; }
+  if ((count ?? 0) >= 20) { await send(chatId, LIMIT[lang]); return; }
 
-  await sendTyping(chatId);
+  await sendTyping(chatId, bot.token);
   const port = serviceDataPort(admin);
 
   // 4. /report → today's daily report
   if (/^\/report\b/i.test(text)) {
     const date = todayIn(business.timezone);
     const { data, error } = await admin.rpc('fn_daily_report', { p_business: business.id, p_date: date });
-    if (error) { await sendTelegram(chatId, dict(lang).errors.generic); return; }
-    await sendTelegram(chatId, await buildDailyReport(data as DailyReportData, port, business.modules, business.timezone, lang));
+    if (error) { await send(chatId, dict(lang).errors.generic); return; }
+    await send(chatId, await buildDailyReport(data as DailyReportData, port, business.modules, business.timezone, lang));
     return;
   }
 
@@ -88,7 +91,7 @@ export async function handleTelegramMessage(admin: Admin, msg: TgMessage): Promi
   };
   const result = await coordinate(ctx, text.slice(0, 1000), { llm: getLlm() });
   const agents = [...new Set(result.reports.map((r) => r.agent))].map((a) => ctx.t.agent[a]).join(', ');
-  await sendTelegram(chatId, result.answer + (agents ? `\n\n🤖 ${agents}` : ''));
+  await send(chatId, result.answer + (agents ? `\n\n🤖 ${agents}` : ''));
 
   // 6. Keep a history (same tables as the web chat), owned by the business owner
   const owner = business.created_by;

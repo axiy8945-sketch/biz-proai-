@@ -105,7 +105,7 @@ export const uz: Dict = {
     title: 'Sozlamalar', business: 'Biznes', appearance: 'Koʻrinish', theme: 'Mavzu', dark: 'Qorongʻi', light: 'Yorugʻ',
     system: 'Tizim', language: 'Interfeys tili', reports: 'Kunlik hisobot', reportTime: 'Yuborish vaqti',
     channel: 'Qayerga yuborish', ch_in_app: 'Ilovada', ch_telegram: 'Telegram', ch_none: 'Yubormaslik',
-    telegram: 'Telegram', tgAbout: 'Telegram orqali AI jamoaga savol berasiz va kunlik hisobotni olasiz.', tgBotSetup: '1. Botni ishga tushirish', tgBotReady: 'Bot ishlayapti ✓', tgReconnect: 'Qayta ulash', tgConnect: 'Telegramni ulash', tgConnected: 'Telegram ulangan',
+    telegram: 'Telegram', tgAbout: 'Telegram orqali AI jamoaga savol berasiz va kunlik hisobotni olasiz.', tgBotSetup: '1. Botni ishga tushirish', tgBotReady: 'Bot ishlayapti ✓', tgReconnect: 'Qayta ulash', tgStep1: 'Telegram\'da @BotFather ni oching, /newbot yozing va bot yarating.', tgStep2: 'BotFather bergan tokenni nusxalab, shu yerga qoʻying.', tgStep3: '✅ Bot tayyor! Tugmani bosing va Telegram\'da Start ni bosing.', tgToken: 'Bot tokeni', tgBadToken: 'Token notoʻgʻri. BotFather bergan tokenni toʻliq nusxalang.', tgNeedSql: 'Bazani yangilash kerak: Supabase\'da 0005_telegram_bots.sql ni ishga tushiring.', tgConnect: 'Telegramni ulash', tgConnected: 'Telegram ulangan',
     tgHow: 'Botni oching va unga ushbu buyruqni yuboring:', tgNotConfigured: 'Bot sozlanmagan: serverga TELEGRAM_BOT_TOKEN qoʻshing.',
     negativeStock: 'Qoldiq nol boʻlsa ham sotishga ruxsat', agents: 'AI agentlar', switchBusiness: 'Biznesni almashtirish',
     addBusiness: 'Biznes qoʻshish', timezone: 'Vaqt mintaqasi', modules: 'Modullar',
