@@ -17,7 +17,7 @@ Interface and AI answers in **Kyrgyz, Uzbek (Latin) and Russian**.
 | Calculations | Deterministic SQL functions (`supabase/migrations/0004_analytics.sql`) — the only source of numbers for UI, reports and AI |
 | AI | Central Coordinator + 6 specialist agents (`src/lib/ai`), server-side Anthropic API (optional) |
 | Styling | Hand-written mobile-first design system (`src/app/globals.css`), dark + light themes, inline SVG icons and charts |
-| Jobs | Vercel Cron → `/api/cron/daily-report` (hourly; each business gets its report at its own local time) |
+| Jobs | Vercel Cron → `/api/cron/daily-report` (daily at 21:00 Bishkek on the free Hobby plan; hourly per-business times with `CRON_HOURLY=1` on Pro) |
 | Messaging | Telegram bot link + daily report delivery |
 
 > **Why no Tailwind?** The preferred stack listed Tailwind. This build environment had no access to the npm registry, so the styling was written as a compact CSS design system instead. That kept the UI testable here — every screen was rendered and checked in Chrome at phone widths. The CSS uses design tokens (`--blue`, `--surface`, …), so moving to Tailwind later is mechanical.
@@ -83,7 +83,7 @@ npm run dev                   # http://localhost:3000 — open it on your phone 
 
 ### 3.3 Deploy (Vercel)
 1. Import the repository in Vercel and add all variables from `.env.example`.
-2. `vercel.json` already schedules the hourly report cron. Set `CRON_SECRET` to any long random string.
+2. `vercel.json` schedules the daily report cron (15:00 UTC = 21:00 Bishkek; Hobby plans allow one run per day). Set `CRON_SECRET` to any long random string.
 3. Open the site URL on your phone → **Register → choose business type → start selling**.
 
 ### 3.4 Telegram (optional)

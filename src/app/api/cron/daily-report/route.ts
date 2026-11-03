@@ -10,7 +10,10 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
 /**
- * Hourly cron (see vercel.json). For every business whose local report hour is now,
+ * Cron (see vercel.json). Vercel Hobby allows one run per day (15:00 UTC = 21:00 Bishkek):
+ * every business that has not received today's report gets it. On a Pro plan set
+ * CRON_HOURLY=1 and an hourly schedule to deliver at each business's own report time.
+ * For each business,
  * builds the daily report once (unique per business/date) and delivers it.
  * Protected by CRON_SECRET (Vercel sends it as a Bearer token).
  */
@@ -29,7 +32,7 @@ export async function GET(req: NextRequest) {
   for (const b of businesses ?? []) {
     if (force && b.id !== force) continue;
     const hour = new Intl.DateTimeFormat('en-GB', { timeZone: b.timezone, hour: '2-digit', hour12: false }).format(new Date());
-    if (!force && hour !== String(b.report_time).slice(0, 2)) continue;
+    if (!force && process.env.CRON_HOURLY === '1' && hour !== String(b.report_time).slice(0, 2)) continue;
     const date = todayIn(b.timezone);
     const { data: existing } = await admin.from('daily_reports').select('id,delivered_at').eq('business_id', b.id).eq('report_date', date).maybeSingle();
     if (existing?.delivered_at && !force) { results.push({ id: b.id, status: 'already_sent' }); continue; }
