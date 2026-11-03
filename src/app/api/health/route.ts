@@ -34,13 +34,28 @@ export async function GET() {
     const m = await sb.from('memberships').select('business_id,role,businesses(id,name,type)').eq('user_id', data.user.id);
     const p = await sb.from('profiles').select('active_business_id').eq('id', data.user.id).maybeSingle();
     const res: Record<string, unknown> = { signed_in: true, memberships: m.error ? { error: m.error.message } : m.data?.length ?? 0, profile: p.error ? { error: p.error.message } : Boolean(p.data) };
+    const ctxq = await sb.from('memberships').select('id,business_id,user_id,role,full_name,phone,permissions,active,businesses(id,name,type,modules,currency,language,timezone,allow_negative_stock,report_time,report_channel,telegram_chat_id,agent_settings)').eq('user_id', data.user.id).eq('active', true);
+    res.context_query = ctxq.error ? { error: ctxq.error.message } : 'ok';
+    const prof = await sb.from('profiles').select('active_business_id,language,theme').eq('id', data.user.id).maybeSingle();
+    res.profile_query = prof.error ? { error: prof.error.message } : 'ok';
     const biz = m.data?.[0]?.business_id;
     if (biz) {
       const d = new Date().toISOString().slice(0, 10);
-      const r = await sb.rpc('fn_sales_overview', { p_business: biz, p_from: d, p_to: d });
-      res.analytics = r.error ? { error: r.error.message } : 'ok';
-      const inv = await sb.rpc('fn_inventory_status', { p_business: biz });
-      res.inventory = inv.error ? { error: inv.error.message } : 'ok';
+      const calls: [string, Record<string, unknown>][] = [
+        ['fn_sales_overview', { p_business: biz, p_from: d, p_to: d }],
+        ['fn_finance_summary', { p_business: biz, p_from: d, p_to: d }],
+        ['fn_sales_series', { p_business: biz, p_from: d, p_to: d }],
+        ['fn_top_products', { p_business: biz, p_from: d, p_to: d, p_limit: 5 }],
+        ['fn_inventory_status', { p_business: biz }],
+        ['list_products', { p_business: biz, p_include_inactive: true }],
+        ['app_today', { p_business: biz }],
+      ];
+      const rpc: Record<string, unknown> = {};
+      for (const [fn, args] of calls) {
+        const r = await sb.rpc(fn, args);
+        rpc[fn] = r.error ? { error: r.error.message, code: r.error.code } : 'ok';
+      }
+      res.rpc = rpc;
     }
     return res;
   });
