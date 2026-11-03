@@ -1,10 +1,11 @@
 'use server';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { AGENT_IDS } from '../ai/types';
 import type { ActionResult } from '../errors';
 import { dict, isLang } from '../i18n';
 import { supabaseServer } from '../supabase/server';
+import { registerTelegramWebhook } from '../telegram';
 import { ALL_MODULES, BUSINESS_TYPES, type ModuleId } from '../types';
 import { bool, oneOf, str, uuid } from '../validate';
 import { run, unwrap } from './_run';
@@ -90,4 +91,16 @@ export async function setTheme(theme: string) {
   const sb = await supabaseServer();
   const { data: { user } } = await sb.auth.getUser();
   if (user) await sb.from('profiles').upsert({ id: user.id, theme: v }, { onConflict: 'id' });
+}
+
+/** Owner-only: connects the Telegram bot to this site (setWebhook) so the AI team answers in Telegram. */
+export async function setupTelegramBot() {
+  return run(async (ctx) => {
+    if (!ctx.isOwner) throw new Error('owner_only');
+    const h = await headers();
+    const host = h.get('x-forwarded-host') ?? h.get('host');
+    const res = await registerTelegramWebhook(`https://${host}`);
+    if (!res.ok) throw new Error('msg:' + (res.error === 'not_configured' ? ctx.t.settings.tgNotConfigured : res.error));
+    return res.username ?? '';
+  });
 }

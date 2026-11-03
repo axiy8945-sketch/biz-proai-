@@ -104,7 +104,7 @@ export const ru = {
     title: 'Настройки', business: 'Бизнес', appearance: 'Оформление', theme: 'Тема', dark: 'Тёмная', light: 'Светлая',
     system: 'Системная', language: 'Язык интерфейса', reports: 'Ежедневный отчёт', reportTime: 'Время отправки',
     channel: 'Куда отправлять', ch_in_app: 'В приложении', ch_telegram: 'Telegram', ch_none: 'Не отправлять',
-    telegram: 'Telegram', tgConnect: 'Подключить Telegram', tgConnected: 'Telegram подключён',
+    telegram: 'Telegram', tgAbout: 'Задавайте вопросы AI-команде и получайте ежедневный отчёт в Telegram.', tgBotSetup: '1. Запустить бота', tgBotReady: 'Бот работает ✓', tgReconnect: 'Переподключить', tgConnect: 'Подключить Telegram', tgConnected: 'Telegram подключён',
     tgHow: 'Откройте бота и отправьте ему эту команду:', tgNotConfigured: 'Бот не настроен: добавьте TELEGRAM_BOT_TOKEN на сервере.',
     negativeStock: 'Разрешить продажу при нулевом остатке', agents: 'AI-агенты', switchBusiness: 'Сменить бизнес',
     addBusiness: 'Добавить бизнес', timezone: 'Часовой пояс', modules: 'Модули',

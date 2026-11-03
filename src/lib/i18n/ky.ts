@@ -105,7 +105,7 @@ export const ky: Dict = {
     title: 'Жөндөөлөр', business: 'Бизнес', appearance: 'Көрүнүш', theme: 'Тема', dark: 'Караңгы', light: 'Жарык',
     system: 'Системалык', language: 'Интерфейс тили', reports: 'Күнүмдүк отчет', reportTime: 'Жөнөтүү убактысы',
     channel: 'Кайда жөнөтүү', ch_in_app: 'Тиркемеде', ch_telegram: 'Telegram', ch_none: 'Жөнөтпөө',
-    telegram: 'Telegram', tgConnect: 'Telegram туташтыруу', tgConnected: 'Telegram туташкан',
+    telegram: 'Telegram', tgAbout: 'Telegram аркылуу AI командага суроо берип, күнүмдүк отчетту аласыз.', tgBotSetup: '1. Ботту иштетүү', tgBotReady: 'Бот иштеп жатат ✓', tgReconnect: 'Кайра туташтыруу', tgConnect: 'Telegram туташтыруу', tgConnected: 'Telegram туташкан',
     tgHow: 'Ботту ачып, ага бул буйрукту жөнөтүңүз:', tgNotConfigured: 'Бот жөндөлгөн эмес: серверге TELEGRAM_BOT_TOKEN кошуңуз.',
     negativeStock: 'Калдык нөл болсо да сатууга уруксат берүү', agents: 'AI агенттер', switchBusiness: 'Бизнести алмаштыруу',
     addBusiness: 'Бизнес кошуу', timezone: 'Убакыт алкагы', modules: 'Модулдар',

@@ -2,7 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { signOut } from '@/lib/actions/auth';
-import { createTelegramCode, setAgentEnabled, setTheme, switchBusiness, updateBusiness, updateReportSettings } from '@/lib/actions/business';
+import { createTelegramCode, setupTelegramBot, setAgentEnabled, setTheme, switchBusiness, updateBusiness, updateReportSettings } from '@/lib/actions/business';
 import type { Dict } from '@/lib/i18n';
 import { ALL_MODULES, type Business } from '@/lib/types';
 import { Icon } from '../icons';
@@ -88,20 +88,28 @@ export function ReportSettingsForm({ t, business }: { t: Dict; business: Busines
 
 export function TelegramConnect({ t, connected, configured, botName }: { t: Dict; connected: boolean; configured: boolean; botName: string }) {
   const [code, setCode] = useState<string | null>(null);
+  const [bot, setBot] = useState(botName);
+  const [ready, setReady] = useState(false);
   const { run, pending, error } = useAction(createTelegramCode);
+  const setup = useAction(setupTelegramBot);
   if (!configured) return <div className="notice"><Icon name="alert" /><span>{t.settings.tgNotConfigured}</span></div>;
   return (
     <div className="card stack">
+      <p className="small muted">{t.settings.tgAbout}</p>
       {connected && <div className="form-ok"><span className="row" style={{ gap: 8 }}><Icon name="check" width={18} />{t.settings.tgConnected}</span></div>}
+      <button type="button" className="btn btn-secondary btn-block" disabled={setup.pending} onClick={async () => { const r = await setup.run(); if (r.ok) { setReady(true); if (r.data) setBot(r.data); } }}>
+        <Icon name="sparkles" />{ready ? t.settings.tgBotReady : t.settings.tgBotSetup}
+      </button>
+      {setup.error && <div className="form-error">{setup.error}</div>}
       {code ? (
         <>
           <p className="small muted">{t.settings.tgHow}</p>
           <div className="kbd">/start {code}</div>
-          {botName && <a className="btn btn-primary btn-block" href={`https://t.me/${botName}?start=${code}`} target="_blank" rel="noreferrer"><Icon name="telegram" />@{botName}</a>}
+          {bot && <a className="btn btn-primary btn-block" href={`https://t.me/${bot}?start=${code}`} target="_blank" rel="noreferrer"><Icon name="telegram" />@{bot}</a>}
         </>
       ) : (
-        <button type="button" className="btn btn-secondary btn-block" disabled={pending} onClick={async () => { const r = await run(); if (r.ok && r.data) setCode(r.data); }}>
-          <Icon name="telegram" />{t.settings.tgConnect}
+        <button type="button" className="btn btn-primary btn-block" disabled={pending} onClick={async () => { const r = await run(); if (r.ok && r.data) setCode(r.data); }}>
+          <Icon name="telegram" />{connected ? t.settings.tgReconnect : t.settings.tgConnect}
         </button>
       )}
       {error && <div className="form-error">{error}</div>}
