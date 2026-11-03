@@ -43,7 +43,7 @@ export function BusinessSwitcher({ t, current, list }: { t: Dict; current: strin
 export function BusinessSettingsForm({ t, business }: { t: Dict; business: Business }) {
   const { run, pending, error, ok } = useAction(updateBusiness);
   return (
-    <form className="card stack" action={(f) => run(f)}>
+    <form className="card stack" action={async (f) => { await run(f); }}>
       <label className="field"><span>{t.onboarding.businessName}</span><input className="input" name="name" defaultValue={business.name} required maxLength={120} /></label>
       <div className="grid-2">
         <label className="field"><span>{t.onboarding.currency}</span>
@@ -71,7 +71,7 @@ export function BusinessSettingsForm({ t, business }: { t: Dict; business: Busin
 export function ReportSettingsForm({ t, business }: { t: Dict; business: Business }) {
   const { run, pending, error, ok } = useAction(updateReportSettings);
   return (
-    <form className="card stack" action={(f) => run(f)}>
+    <form className="card stack" action={async (f) => { await run(f); }}>
       <div className="grid-2">
         <label className="field"><span>{t.settings.reportTime}</span><input className="input" type="time" name="report_time" defaultValue={business.report_time.slice(0, 5)} step={3600} /></label>
         <label className="field"><span>{t.settings.channel}</span>
