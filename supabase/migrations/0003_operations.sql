@@ -372,7 +372,7 @@ language plpgsql security definer set search_path = public as $$
 declare code text;
 begin
   perform app_require(app_is_owner(p_business), 'forbidden');
-  code := upper(encode(gen_random_bytes(5), 'hex'));
+  code := upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 10));
   update businesses set telegram_link_code = code where id = p_business;
   return code;
 end $$;

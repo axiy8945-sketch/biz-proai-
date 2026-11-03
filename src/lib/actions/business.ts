@@ -84,7 +84,12 @@ export async function setAgentEnabled(agent: string, enabled: boolean) {
 }
 
 export async function createTelegramCode() {
-  return run(async (ctx, sb) => unwrap(await sb.rpc('create_telegram_link_code', { p_business: ctx.business.id })) as string);
+  return run(async (ctx) => {
+    if (!ctx.isOwner) throw new Error('owner_only');
+    const admin = supabaseAdmin();
+    if (!admin) throw new Error('msg:' + ctx.t.emp.serviceKeyMissing);
+    return newLinkCode(admin, ctx.business.id);
+  });
 }
 
 export async function setTheme(theme: string) {
@@ -112,21 +117,34 @@ export async function setupTelegramBot() {
  * fresh secret, store it server-side (service role only) and return a one-time link code.
  */
 export async function connectTelegramBot(token: string) {
-  return run(async (ctx, sb) => {
+  return run(async (ctx) => {
     if (!ctx.isOwner) throw new Error('owner_only');
     const admin = supabaseAdmin();
     if (!admin) throw new Error('msg:' + ctx.t.emp.serviceKeyMissing);
-    const clean = String(token ?? '').trim();
-    const username = await checkBotToken(clean);
-    if (username === null) throw new Error('msg:' + ctx.t.settings.tgBadToken);
-    const secret = randomBytes(24).toString('hex');
-    const h = await headers();
-    const host = h.get('x-forwarded-host') ?? h.get('host');
-    const reg = await registerTelegramWebhook(`https://${host}`, clean, secret);
-    if (!reg.ok) throw new Error('msg:' + (reg.error ?? 'Telegram error'));
-    const { error } = await admin.from('telegram_bots').upsert({ business_id: ctx.business.id, token: clean, secret, username, updated_at: new Date().toISOString() });
-    if (error) throw new Error('msg:' + ctx.t.settings.tgNeedSql);
-    const code = unwrap(await sb.rpc('create_telegram_link_code', { p_business: ctx.business.id })) as string;
-    return { username, code };
+    try {
+      const clean = String(token ?? '').trim();
+      const username = await checkBotToken(clean);
+      if (username === null) throw new Error('msg:' + ctx.t.settings.tgBadToken);
+      const secret = randomBytes(24).toString('hex');
+      const h = await headers();
+      const host = h.get('x-forwarded-host') ?? h.get('host');
+      const reg = await registerTelegramWebhook(`https://${host}`, clean, secret);
+      if (!reg.ok) throw new Error('msg:Telegram: ' + (reg.error ?? 'error'));
+      const { error } = await admin.from('telegram_bots').upsert({ business_id: ctx.business.id, token: clean, secret, username, updated_at: new Date().toISOString() });
+      if (error) throw new Error('msg:' + ctx.t.settings.tgNeedSql + ' (' + error.message + ')');
+      const code = await newLinkCode(admin, ctx.business.id);
+      return { username, code };
+    } catch (e) {
+      const m = e instanceof Error ? e.message : String(e);
+      throw new Error(m.startsWith('msg:') ? m : 'msg:' + m);
+    }
   });
+}
+
+/** One-time code the owner sends to the bot as "/start CODE" (generated server-side). */
+async function newLinkCode(admin: NonNullable<ReturnType<typeof supabaseAdmin>>, businessId: string): Promise<string> {
+  const code = randomBytes(5).toString('hex').toUpperCase();
+  const { error } = await admin.from('businesses').update({ telegram_link_code: code }).eq('id', businessId);
+  if (error) throw new Error('msg:' + error.message);
+  return code;
 }
