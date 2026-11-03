@@ -1,4 +1,4 @@
-import { AGENT_ICON } from '@/components/ai/Chat';
+import { AGENT_ICON } from '@/components/ai/agentIcons';
 import { AgentToggle } from '@/components/forms/SettingsForms';
 import { Icon } from '@/components/icons';
 import { PageTitle } from '@/components/ui';

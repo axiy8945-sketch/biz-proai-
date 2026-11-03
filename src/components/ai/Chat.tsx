@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import type { AgentId, Fact, ReportStatus } from '@/lib/ai/types';
 import type { Dict } from '@/lib/i18n';
-import { Icon, type IconName } from '../icons';
+import { Icon } from '../icons';
+import { AGENT_ICON } from './agentIcons';
 
 export interface ChatMessage {
   id: string;
@@ -13,15 +14,6 @@ export interface ChatMessage {
   reports?: { agent: AgentId; status: ReportStatus; intent: string; facts: Fact[] }[];
 }
 
-export const AGENT_ICON: Record<AgentId | 'coordinator', { icon: IconName; tone: string }> = {
-  coordinator: { icon: 'sparkles', tone: 'ic-blue' },
-  sales: { icon: 'cart', tone: 'ic-blue' },
-  finance: { icon: 'coins', tone: 'ic-green' },
-  inventory: { icon: 'box', tone: 'ic-amber' },
-  employee: { icon: 'users', tone: 'ic-violet' },
-  production: { icon: 'flame', tone: 'ic-red' },
-  analyst: { icon: 'brain', tone: 'ic-violet' },
-};
 
 export function Chat({ t, conversationId, initial, team, llm }: {
   t: Dict; conversationId: string | null; initial: ChatMessage[]; team: { id: AgentId; on: boolean }[]; llm: boolean;
